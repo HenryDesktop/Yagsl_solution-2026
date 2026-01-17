@@ -1,0 +1,20 @@
+{
+  "Connections": {
+    "open": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "4355"
+  },
+  "Transitory Values": {
+    "open": false
+  },
+  "retained": {
+    "SmartDashboard": {
+      "Auto chooser": {
+        "open": true
+      },
+      "open": true
+    }
+  }
+}
