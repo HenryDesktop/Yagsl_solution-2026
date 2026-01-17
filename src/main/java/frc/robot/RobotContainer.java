@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
 
   private final CommandXboxController m_DriveControl = new CommandXboxController(0);
-  //private final CommandXboxController m_MechaControl = new CommandXboxController(1);
+  private final CommandXboxController m_MechaControl = new CommandXboxController(1);
   private SendableChooser<Command> m_autChooser;
 
   public RobotContainer() {
