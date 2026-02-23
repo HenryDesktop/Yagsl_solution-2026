@@ -1,51 +1,70 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package frc.robot;
 
-import frc.robot.commands.ComAcomodo;
-import frc.robot.commands.ComSwerve;
-import frc.robot.subsystems.SubSwerve;
-
-import com.pathplanner.lib.auto.AutoBuilder;
+import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.SwerveSubsystem;
+import swervelib.SwerveInputStream;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+
 public class RobotContainer {
 
-  private final CommandXboxController m_DriveControl = new CommandXboxController(0);
-  private final CommandXboxController m_MechaControl = new CommandXboxController(1);
-  private SendableChooser<Command> m_autChooser;
+  // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+private final SwerveSubsystem drivebase = new SwerveSubsystem();
+
+  private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+
 
   public RobotContainer() {
-
     configureBindings();
 
-    new Thread(() -> {
-      try {
-        Thread.sleep(1000);
-        m_autChooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData("Auto chooser", m_autChooser);
-      } catch (Exception e){}
-    }).start();
+            // Put the chooser on Shuffleboard
+
+        // Set a default auto so it runs even if you don't pick one        
+  }
+SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(), //gives inputs to swerve from left joystick for translating
+                                                                () -> driverController.getLeftY() * -1,
+                                                                () -> driverController.getLeftX() * -1)
+                                                            .withControllerRotationAxis(driverController::getRightX)
+                                                            .deadband(OperatorConstants.DEADBAND)
+                                                            .scaleTranslation(.5)
+                                                            .scaleRotation(drivebase.getSwerveDrive().getMaximumChassisAngularVelocity()) //SPEED CHANGE
+                                                            .allianceRelativeControl(true);
+
+  SwerveInputStream driveDirectAngle = driveAngularVelocity.copy().withControllerHeadingAxis(driverController::getRightX, //gives inputs from the right joystick for turning
+                                                                                             driverController::getRightY)
+                                                           .headingWhile(true);
+ 
+Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle); //allows robot to move at field oriented angle
+Command driveFieldOrientedAngularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
+  
+
+
+private void configureBindings() {
+  
+    drivebase.setDefaultCommand(driveFieldOrientedAngularVelocity);
+
+    driverController.a().onTrue(new InstantCommand (drivebase::zeroGyro, drivebase));
+
   }
 
-  private void configureBindings() {
 
-    new Trigger(() -> Math.abs(m_DriveControl.getLeftY()) >= 0.05 || Math.abs(m_DriveControl.getLeftX()) >= 0.05 ||
-    Math.abs(m_DriveControl.getRightX()) >= 0.05).whileTrue(new ComSwerve(() -> m_DriveControl.getLeftX(),
-                                                                          () -> m_DriveControl.getLeftY(),
-                                                                          () -> m_DriveControl.getRightX()));
+  // public Command getAutonomousCommand(String pathName) {
+  //   // Create a path following command using AutoBuilder. This will also trigger event markers. //
+  //   return drivebase.getAutonomousCommandSub("New Auto");
+  // }
 
-    m_DriveControl.x().whileTrue(new InstantCommand(() -> SubSwerve.getInstance().resetGyro()));
-    m_DriveControl.a().onTrue(new ComAcomodo());
+    public Command getAutonomousCommand() {
+    return null;
   }
 
-  public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(m_autChooser.getSelected(), new InstantCommand(() -> SubSwerve.getInstance().stop()));
-    //return new InstantCommand(() -> SubSwerve.getInstance().stop());
-  }
 }

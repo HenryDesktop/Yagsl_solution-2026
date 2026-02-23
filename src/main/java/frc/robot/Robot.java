@@ -1,20 +1,22 @@
 package frc.robot;
 
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.SubSwerve;
+// import frc.robot.subsystems.SubSwerve;
 
 public class Robot extends TimedRobot {
 
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
- // private final int[] valid = {10};
   public Robot() {
 
+    DataLogManager.start();
+    
     m_robotContainer = new RobotContainer();
-   // CameraServer.startAutomaticCapture();
   }
 
   @Override
@@ -38,7 +40,6 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.schedule();
     }
 
-    SubSwerve.getInstance().setBreak(true);
   }
 
   @Override
@@ -50,9 +51,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    SubSwerve.getInstance().initEncoders();
-    SubSwerve.getInstance().setBreak(false);
-   // LimelightHelpers.SetFiducialIDFiltersOverride("", valid);
   }
 
   @Override
