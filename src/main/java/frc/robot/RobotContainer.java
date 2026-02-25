@@ -26,25 +26,32 @@ private final SwerveSubsystem drivebase = new SwerveSubsystem();
 
   public RobotContainer() {
     configureBindings();
-
-            // Put the chooser on Shuffleboard
-
-        // Set a default auto so it runs even if you don't pick one        
+      
   }
-SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(), //gives inputs to swerve from left joystick for translating
-                                                                () -> driverController.getLeftY() * -1,
-                                                                () -> driverController.getLeftX() * -1)
-                                                            .withControllerRotationAxis(driverController::getRightX)
-                                                            .deadband(OperatorConstants.DEADBAND)
-                                                            .scaleTranslation(.5)
-                                                            .scaleRotation(drivebase.getSwerveDrive().getMaximumChassisAngularVelocity()) //SPEED CHANGE
-                                                            .allianceRelativeControl(true);
+SwerveInputStream driveAngularVelocity =
+    SwerveInputStream.of(drivebase.getSwerveDrive(),
+                                                () -> -driverController.getLeftY(),
+                                                  () -> -driverController.getLeftX())
+                                                  .withControllerRotationAxis(driverController::getRightX)
+                                                  .deadband(OperatorConstants.DEADBAND)
+                                                  .scaleTranslation(.6)
+                                                  .scaleRotation(1.0)
+                                                  .allianceRelativeControl(true);
 
-  SwerveInputStream driveDirectAngle = driveAngularVelocity.copy().withControllerHeadingAxis(driverController::getRightX, //gives inputs from the right joystick for turning
-                                                                                             driverController::getRightY)
-                                                           .headingWhile(true);
- 
-Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle); //allows robot to move at field oriented angle
+ SwerveInputStream driveDirectAngle =
+      SwerveInputStream.of(drivebase.getSwerveDrive(),
+                                                () -> -driverController.getLeftY(),
+                                                  () -> -driverController.getLeftX())
+                                              .withControllerHeadingAxis(
+                                                  driverController::getRightX,
+                                                  driverController::getRightY)
+                                                .deadband(OperatorConstants.DEADBAND)
+                                                .scaleTranslation(.6)
+                                                .scaleRotation(1.0)
+                                                .headingWhile(true)
+                                                .allianceRelativeControl(true);
+
+Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
 Command driveFieldOrientedAngularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
   
 
@@ -56,12 +63,6 @@ private void configureBindings() {
     driverController.a().onTrue(new InstantCommand (drivebase::zeroGyro, drivebase));
 
   }
-
-
-  // public Command getAutonomousCommand(String pathName) {
-  //   // Create a path following command using AutoBuilder. This will also trigger event markers. //
-  //   return drivebase.getAutonomousCommandSub("New Auto");
-  // }
 
     public Command getAutonomousCommand() {
     return null;
